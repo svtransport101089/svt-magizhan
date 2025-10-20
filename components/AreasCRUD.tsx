@@ -7,9 +7,10 @@ import Spinner from './ui/Spinner';
 import Input from './ui/Input';
 import { LOCATION_CATEGORIES } from '../constants';
 import Select from './ui/Select';
+import { Area } from '../types';
 
 const AreasCRUD: React.FC = () => {
-    const [areas, setAreas] = useState<string[][]>([]);
+    const [areas, setAreas] = useState<Area[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const { addToast } = useToast();
@@ -17,8 +18,8 @@ const AreasCRUD: React.FC = () => {
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
-    const [currentRecord, setCurrentRecord] = useState<string[]>([]);
-    const [editingIndex, setEditingIndex] = useState<number | null>(null);
+    const [currentRecord, setCurrentRecord] = useState<Partial<Area>>({});
+    const [recordToDelete, setRecordToDelete] = useState<Area | null>(null);
 
     const headers = ["Location Area", "Location Category"];
 
@@ -45,38 +46,37 @@ const AreasCRUD: React.FC = () => {
             return areas;
         }
         return areas.filter(row =>
-            row.some(cell => cell.toLowerCase().includes(searchTerm.toLowerCase()))
+            Object.values(row).some(cell => String(cell).toLowerCase().includes(searchTerm.toLowerCase()))
         );
     }, [areas, searchTerm]);
 
-    const handleOpenModal = (recordIndex: number | null) => {
-        if (recordIndex !== null) {
-            // Find the original index to handle sorting/filtering
-            const originalIndex = areas.findIndex(row => row.every((cell, i) => cell === filteredData[recordIndex][i]));
-            setEditingIndex(originalIndex);
-            setCurrentRecord([...areas[originalIndex]]);
+    const handleOpenModal = (area: Area | null) => {
+        if (area) {
+            setCurrentRecord({ ...area });
         } else {
-            setEditingIndex(null);
-            setCurrentRecord(new Array(headers.length).fill(''));
+            setCurrentRecord({ locationArea: '', locationCategory: LOCATION_CATEGORIES[0] });
         }
         setIsModalOpen(true);
     };
 
     const handleCloseModal = () => {
         setIsModalOpen(false);
-        setCurrentRecord([]);
-        setEditingIndex(null);
+        setCurrentRecord({});
     };
     
     const handleSave = async () => {
         if (isSubmitting) return;
+        if (!currentRecord.locationArea?.trim() || !currentRecord.locationCategory?.trim()) {
+            addToast("All fields must be filled.", "error");
+            return;
+        }
         setIsSubmitting(true);
         try {
-            if (editingIndex !== null) {
-                await updateArea(editingIndex, currentRecord);
+            if (currentRecord.id) {
+                await updateArea(currentRecord as Area);
                 addToast('Area updated successfully', 'success');
             } else {
-                await addArea(currentRecord);
+                await addArea(currentRecord as Omit<Area, 'id'>);
                 addToast('Area added successfully', 'success');
             }
             await fetchData();
@@ -89,23 +89,22 @@ const AreasCRUD: React.FC = () => {
         }
     };
     
-    const openDeleteConfirmation = (index: number) => {
-        const originalIndex = areas.findIndex(row => row.every((cell, i) => cell === filteredData[index][i]));
-        setEditingIndex(originalIndex);
+    const openDeleteConfirmation = (area: Area) => {
+        setRecordToDelete(area);
         setIsDeleteConfirmOpen(true);
     };
 
     const closeDeleteConfirmation = () => {
         setIsDeleteConfirmOpen(false);
-        setEditingIndex(null);
+        setRecordToDelete(null);
     };
 
     const handleDelete = async () => {
-        if (editingIndex !== null) {
+        if (recordToDelete?.id) {
             if(isSubmitting) return;
             setIsSubmitting(true);
             try {
-                await deleteArea(editingIndex);
+                await deleteArea(recordToDelete.id);
                 addToast('Area deleted successfully', 'success');
                 await fetchData();
             } catch (error) {
@@ -118,10 +117,8 @@ const AreasCRUD: React.FC = () => {
         }
     };
     
-    const handleModalInputChange = (value: string, index: number) => {
-        const updatedRecord = [...currentRecord];
-        updatedRecord[index] = value;
-        setCurrentRecord(updatedRecord);
+    const handleModalInputChange = (field: keyof Area, value: string) => {
+        setCurrentRecord(prev => ({ ...prev, [field]: value }));
     };
 
     return (
@@ -151,15 +148,14 @@ const AreasCRUD: React.FC = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {filteredData.map((row, rowIndex) => (
-                                <tr key={rowIndex} className="border-b hover:bg-gray-50">
-                                    {row.map((cell, cellIndex) => (
-                                        <td key={cellIndex} className="px-4 py-2">{cell}</td>
-                                    ))}
+                            {filteredData.map((row) => (
+                                <tr key={row.id} className="border-b hover:bg-gray-50">
+                                    <td className="px-4 py-2">{row.locationArea}</td>
+                                    <td className="px-4 py-2">{row.locationCategory}</td>
                                     <td className="px-4 py-2">
                                         <div className="flex space-x-2">
-                                            <button onClick={() => handleOpenModal(rowIndex)} className="text-blue-600 hover:underline">Edit</button>
-                                            <button onClick={() => openDeleteConfirmation(rowIndex)} className="text-red-600 hover:underline">Delete</button>
+                                            <button onClick={() => handleOpenModal(row)} className="text-blue-600 hover:underline">Edit</button>
+                                            <button onClick={() => openDeleteConfirmation(row)} className="text-red-600 hover:underline">Delete</button>
                                         </div>
                                     </td>
                                 </tr>
@@ -172,19 +168,19 @@ const AreasCRUD: React.FC = () => {
             {isModalOpen && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 z-40 flex justify-center items-center">
                     <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md">
-                        <h3 className="text-lg font-bold mb-4">{editingIndex !== null ? 'Edit Area' : 'Add New Area'}</h3>
+                        <h3 className="text-lg font-bold mb-4">{currentRecord.id ? 'Edit Area' : 'Add New Area'}</h3>
                         <div className="space-y-4">
                             <Input
                                 id="locationArea"
                                 label="Location Area"
-                                value={currentRecord[0] || ''}
-                                onChange={(e) => handleModalInputChange(e.target.value, 0)}
+                                value={currentRecord.locationArea || ''}
+                                onChange={(e) => handleModalInputChange('locationArea', e.target.value)}
                             />
                             <Select
                                 id="locationCategory"
                                 label="Location Category"
-                                value={currentRecord[1] || ''}
-                                onChange={(e) => handleModalInputChange(e.target.value, 1)}
+                                value={currentRecord.locationCategory || ''}
+                                onChange={(e) => handleModalInputChange('locationCategory', e.target.value)}
                                 options={LOCATION_CATEGORIES.map(c => ({ value: c, label: c }))}
                             />
                         </div>

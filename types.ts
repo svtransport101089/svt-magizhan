@@ -10,10 +10,36 @@ export enum Page {
 }
 
 export interface Customer {
+    id?: number;
     customers_name: string;
     customers_address1: string;
     customers_address2: string;
 }
+
+export interface Area {
+    id?: number;
+    locationArea: string;
+    locationCategory: string;
+}
+
+export interface Calculation {
+    id?: number;
+    products_type_category: string,
+    products_minimum_hours: string,
+    products_minimum_km: string,
+    products_minimum_charges: string,
+    products_additional_hours_charges: string,
+    products_running_hours: string,
+    products_driver_bata: string
+}
+
+export interface Lookup {
+    id?: number;
+    driver_name: string;
+    license_number: string;
+    phone: string;
+}
+
 
 export interface CustomerAddress {
     address1: string;

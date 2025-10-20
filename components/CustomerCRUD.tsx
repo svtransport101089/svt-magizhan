@@ -18,7 +18,7 @@ const CustomerCRUD: React.FC = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
     const [currentRecord, setCurrentRecord] = useState<Partial<Customer>>({});
-    const [editingIndex, setEditingIndex] = useState<number | null>(null);
+    const [recordToDelete, setRecordToDelete] = useState<Customer | null>(null);
 
     const fetchData = async () => {
         setIsLoading(true);
@@ -49,13 +49,10 @@ const CustomerCRUD: React.FC = () => {
         );
     }, [customers, searchTerm]);
 
-    const handleOpenModal = (recordIndex: number | null) => {
-        if (recordIndex !== null) {
-            const originalIndex = customers.findIndex(c => c.customers_name === filteredData[recordIndex].customers_name);
-            setEditingIndex(originalIndex);
-            setCurrentRecord({ ...customers[originalIndex] });
+    const handleOpenModal = (customer: Customer | null) => {
+        if (customer) {
+            setCurrentRecord({ ...customer });
         } else {
-            setEditingIndex(null);
             setCurrentRecord({ customers_name: '', customers_address1: '', customers_address2: '' });
         }
         setIsModalOpen(true);
@@ -64,7 +61,6 @@ const CustomerCRUD: React.FC = () => {
     const handleCloseModal = () => {
         setIsModalOpen(false);
         setCurrentRecord({});
-        setEditingIndex(null);
     };
     
     const handleSave = async () => {
@@ -76,11 +72,11 @@ const CustomerCRUD: React.FC = () => {
 
         setIsSubmitting(true);
         try {
-            if (editingIndex !== null) {
-                await updateCustomer(editingIndex, currentRecord as Customer);
+            if (currentRecord.id) {
+                await updateCustomer(currentRecord as Customer);
                 addToast('Customer updated successfully', 'success');
             } else {
-                await addCustomer(currentRecord as Customer);
+                await addCustomer(currentRecord as Omit<Customer, 'id'>);
                 addToast('Customer added successfully', 'success');
             }
             await fetchData();
@@ -93,23 +89,22 @@ const CustomerCRUD: React.FC = () => {
         }
     };
     
-    const openDeleteConfirmation = (index: number) => {
-        const originalIndex = customers.findIndex(c => c.customers_name === filteredData[index].customers_name);
-        setEditingIndex(originalIndex);
+    const openDeleteConfirmation = (customer: Customer) => {
+        setRecordToDelete(customer);
         setIsDeleteConfirmOpen(true);
     };
 
     const closeDeleteConfirmation = () => {
         setIsDeleteConfirmOpen(false);
-        setEditingIndex(null);
+        setRecordToDelete(null);
     };
 
     const handleDelete = async () => {
-        if (editingIndex !== null) {
+        if (recordToDelete?.id) {
             if(isSubmitting) return;
             setIsSubmitting(true);
             try {
-                await deleteCustomer(editingIndex);
+                await deleteCustomer(recordToDelete.id);
                 addToast('Customer deleted successfully', 'success');
                 await fetchData();
             } catch (error) {
@@ -154,15 +149,15 @@ const CustomerCRUD: React.FC = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {filteredData.map((customer, index) => (
-                                <tr key={index} className="border-b hover:bg-gray-50">
+                            {filteredData.map((customer) => (
+                                <tr key={customer.id} className="border-b hover:bg-gray-50">
                                     <td className="px-4 py-2">{customer.customers_name}</td>
                                     <td className="px-4 py-2">{customer.customers_address1}</td>
                                     <td className="px-4 py-2">{customer.customers_address2}</td>
                                     <td className="px-4 py-2">
                                         <div className="flex space-x-2">
-                                            <button onClick={() => handleOpenModal(index)} className="text-blue-600 hover:underline">Edit</button>
-                                            <button onClick={() => openDeleteConfirmation(index)} className="text-red-600 hover:underline">Delete</button>
+                                            <button onClick={() => handleOpenModal(customer)} className="text-blue-600 hover:underline">Edit</button>
+                                            <button onClick={() => openDeleteConfirmation(customer)} className="text-red-600 hover:underline">Delete</button>
                                         </div>
                                     </td>
                                 </tr>
@@ -175,7 +170,7 @@ const CustomerCRUD: React.FC = () => {
             {isModalOpen && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 z-40 flex justify-center items-center">
                     <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md">
-                        <h3 className="text-lg font-bold mb-4">{editingIndex !== null ? 'Edit Customer' : 'Add New Customer'}</h3>
+                        <h3 className="text-lg font-bold mb-4">{currentRecord.id ? 'Edit Customer' : 'Add New Customer'}</h3>
                         <div className="space-y-4">
                             <Input
                                 id="customerName"

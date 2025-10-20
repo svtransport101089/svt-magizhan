@@ -5,29 +5,35 @@ import Card from './ui/Card';
 import Button from './ui/Button';
 import Spinner from './ui/Spinner';
 import Input from './ui/Input';
+import { Calculation } from '../types';
+
+// FIX: Define a type for string keys of Calculation to ensure type safety.
+type CalculationStringKeys = keyof Omit<Calculation, 'id'>;
 
 const CalculationsCRUD: React.FC = () => {
-    const [calculationsData, setCalculationsData] = useState<string[][]>([]);
-    const [headers, setHeaders] = useState<string[]>([]);
+    const [calculationsData, setCalculationsData] = useState<Calculation[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const { addToast } = useToast();
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Modal states
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
-    const [currentRecord, setCurrentRecord] = useState<string[]>([]);
-    const [editingIndex, setEditingIndex] = useState<number | null>(null);
-    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [currentRecord, setCurrentRecord] = useState<Partial<Calculation>>({});
+    const [recordToDelete, setRecordToDelete] = useState<Calculation | null>(null);
 
+    const headers: CalculationStringKeys[] = [
+        "products_type_category", "products_minimum_hours", "products_minimum_km", 
+        "products_minimum_charges", "products_additional_hours_charges", 
+        "products_running_hours", "products_driver_bata"
+    ];
+    
     const fetchData = async () => {
         setIsLoading(true);
         try {
             const data = await getCalculations();
-            if (data && data.length > 0) {
-                setHeaders(data[0]);
-                setCalculationsData(data.slice(1));
-            }
+            setCalculationsData(data);
         } catch (error) {
             addToast('Failed to fetch calculation data.', 'error');
         } finally {
@@ -45,37 +51,36 @@ const CalculationsCRUD: React.FC = () => {
             return calculationsData;
         }
         return calculationsData.filter(row =>
-            row.some(cell => cell.toLowerCase().includes(searchTerm.toLowerCase()))
+            Object.values(row).some(cell => String(cell).toLowerCase().includes(searchTerm.toLowerCase()))
         );
     }, [calculationsData, searchTerm]);
 
-    const handleOpenModal = (recordIndex: number | null) => {
-        if (recordIndex !== null) {
-            const originalIndex = calculationsData.findIndex(row => row.every((cell, i) => cell === filteredData[recordIndex][i]));
-            setEditingIndex(originalIndex);
-            setCurrentRecord([...calculationsData[originalIndex]]);
+    const handleOpenModal = (record: Calculation | null) => {
+        if (record) {
+            setCurrentRecord({ ...record });
         } else {
-            setEditingIndex(null);
-            setCurrentRecord(new Array(headers.length).fill(''));
+            const newRecord: Partial<Calculation> = {};
+            // FIX: Strongly typing `headers` removes the need for casting and resolves the 'never' type error.
+            headers.forEach(h => newRecord[h] = '');
+            setCurrentRecord(newRecord);
         }
         setIsModalOpen(true);
     };
 
     const handleCloseModal = () => {
         setIsModalOpen(false);
-        setCurrentRecord([]);
-        setEditingIndex(null);
+        setCurrentRecord({});
     };
     
     const handleSave = async () => {
         if (isSubmitting) return;
         setIsSubmitting(true);
         try {
-            if (editingIndex !== null) {
-                await updateCalculationRecord(currentRecord, editingIndex + 1);
+            if (currentRecord.id) {
+                await updateCalculationRecord(currentRecord as Calculation);
                 addToast('Record updated successfully', 'success');
             } else {
-                await addCalculationRecord(currentRecord);
+                await addCalculationRecord(currentRecord as Omit<Calculation, 'id'>);
                 addToast('Record added successfully', 'success');
             }
             await fetchData();
@@ -87,23 +92,22 @@ const CalculationsCRUD: React.FC = () => {
         }
     };
     
-    const openDeleteConfirmation = (index: number) => {
-         const originalIndex = calculationsData.findIndex(row => row.every((cell, i) => cell === filteredData[index][i]));
-        setEditingIndex(originalIndex);
+    const openDeleteConfirmation = (record: Calculation) => {
+        setRecordToDelete(record);
         setIsDeleteConfirmOpen(true);
     };
 
     const closeDeleteConfirmation = () => {
         setIsDeleteConfirmOpen(false);
-        setEditingIndex(null);
+        setRecordToDelete(null);
     };
 
     const handleDelete = async () => {
-        if (editingIndex !== null) {
+        if (recordToDelete?.id) {
             if(isSubmitting) return;
             setIsSubmitting(true);
             try {
-                await deleteCalculationRecord(editingIndex + 1);
+                await deleteCalculationRecord(recordToDelete.id);
                 addToast('Record deleted successfully', 'success');
                 await fetchData();
             } catch (error) {
@@ -115,10 +119,8 @@ const CalculationsCRUD: React.FC = () => {
         }
     };
     
-    const handleModalInputChange = (value: string, index: number) => {
-        const updatedRecord = [...currentRecord];
-        updatedRecord[index] = value;
-        setCurrentRecord(updatedRecord);
+    const handleModalInputChange = (field: keyof Calculation, value: string) => {
+        setCurrentRecord(prev => ({ ...prev, [field]: value }));
     };
 
     return (
@@ -143,22 +145,22 @@ const CalculationsCRUD: React.FC = () => {
                     <table className="min-w-full bg-white text-sm">
                         <thead className="bg-gray-200">
                             <tr>
-                                {headers.map((header, index) => (
-                                    <th key={index} className="px-4 py-2 text-left font-semibold text-gray-700 whitespace-nowrap">{header.replace(/_/g, ' ')}</th>
+                                {headers.map((header) => (
+                                    <th key={header} className="px-4 py-2 text-left font-semibold text-gray-700 whitespace-nowrap">{header.replace(/_/g, ' ')}</th>
                                 ))}
                                 <th className="px-4 py-2 text-left font-semibold text-gray-700">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {filteredData.map((row, rowIndex) => (
-                                <tr key={rowIndex} className="border-b hover:bg-gray-50">
-                                    {row.map((cell, cellIndex) => (
-                                        <td key={cellIndex} className="px-4 py-2">{cell}</td>
+                            {filteredData.map((row) => (
+                                <tr key={row.id} className="border-b hover:bg-gray-50">
+                                    {headers.map(header => (
+                                        <td key={header} className="px-4 py-2">{row[header]}</td>
                                     ))}
                                     <td className="px-4 py-2">
                                         <div className="flex space-x-2">
-                                            <button onClick={() => handleOpenModal(rowIndex)} className="text-blue-600 hover:underline">Edit</button>
-                                            <button onClick={() => openDeleteConfirmation(rowIndex)} className="text-red-600 hover:underline">Delete</button>
+                                            <button onClick={() => handleOpenModal(row)} className="text-blue-600 hover:underline">Edit</button>
+                                            <button onClick={() => openDeleteConfirmation(row)} className="text-red-600 hover:underline">Delete</button>
                                         </div>
                                     </td>
                                 </tr>
@@ -171,15 +173,15 @@ const CalculationsCRUD: React.FC = () => {
             {isModalOpen && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 z-40 flex justify-center items-center">
                     <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-                        <h3 className="text-lg font-bold mb-4">{editingIndex !== null ? 'Edit Record' : 'Add New Record'}</h3>
+                        <h3 className="text-lg font-bold mb-4">{currentRecord.id ? 'Edit Record' : 'Add New Record'}</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {headers.map((header, index) => (
+                            {headers.map((header) => (
                                 <Input
                                     key={header}
                                     id={header}
                                     label={header.replace(/_/g, ' ')}
-                                    value={currentRecord[index] || ''}
-                                    onChange={(e) => handleModalInputChange(e.target.value, index)}
+                                    value={String(currentRecord[header] || '')}
+                                    onChange={(e) => handleModalInputChange(header, e.target.value)}
                                 />
                             ))}
                         </div>
