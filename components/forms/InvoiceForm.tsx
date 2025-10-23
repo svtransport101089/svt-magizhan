@@ -12,6 +12,7 @@ import { useToast } from '../../hooks/useToast';
 import { numberToWords } from '../../utils/numberToWords';
 import Button from '../ui/Button';
 import Spinner from '../ui/Spinner';
+import ComboBox from '../ui/ComboBox';
 
 const initialInvoiceState: InvoiceData = {
     trips_memo_no: '',
@@ -74,9 +75,7 @@ interface InvoiceFormProps {
 const InvoiceInput = (props: React.InputHTMLAttributes<HTMLInputElement>) => (
     <input {...props} className={`p-1 border border-gray-400 rounded-sm w-full text-sm font-bold read-only:bg-gray-200 disabled:bg-gray-200 ${props.className}`} />
 );
-const InvoiceSelect = (props: React.SelectHTMLAttributes<HTMLSelectElement>) => (
-     <select {...props} className={`p-1 border border-gray-400 rounded-sm w-full text-sm font-bold bg-white ${props.className}`} />
-);
+
 const InvoiceTextarea = (props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) => (
     <textarea {...props} className={`p-1 border border-gray-400 rounded-sm w-full text-sm font-bold read-only:bg-gray-200 ${props.className}`} />
 );
@@ -217,36 +216,43 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ invoiceMemoToLoad, onSaveSucc
         }
     }, [isLoading, printOnLoad, onPrinted]);
     
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         setInvoiceData(prev => ({ ...prev, [name]: value }));
     };
 
     const handleCustomerNameChange = async (name: string) => {
-        setInvoiceData(prev => ({ ...prev, customers_name: name }));
+        const newDiscount = name.toLowerCase().includes('transport') ? '10' : '0';
+
+        let newAddress = { customers_address1: '', customers_address2: '' };
         try {
             const addresses = await updateCustomerAddresses(name);
             if (addresses.length > 0) {
-                 setInvoiceData(prev => ({
-                    ...prev,
+                newAddress = {
                     customers_address1: addresses[0].address1,
                     customers_address2: addresses[0].address2,
-                }));
+                };
             }
         } catch (error) {
            console.error("Failed to fetch customer addresses", error);
         }
+
+        setInvoiceData(prev => ({
+            ...prev,
+            customers_name: name,
+            trips_discount_percentage: newDiscount,
+            ...newAddress
+        }));
     };
     
-    const handleServiceChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const productItem = e.target.value;
+    const handleServiceChange = (productItem: string) => {
         const selectedService = services.find(service => service[3] === productItem);
 
         if (selectedService) {
             const [
                 _locationArea, // 0
                 _locationCategory, // 1
-                vehicleType, // 2
+                _vehicleTypeDisplay, // 2
                 _productItem, // 3
                 minHours, // 4
                 _minKM, // 5
@@ -254,6 +260,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ invoiceMemoToLoad, onSaveSucc
                 addHourCharge, // 7
                 _runningHours, // 8
                 driverBata, // 9
+                vehicleType, // 10
             ] = selectedService;
 
             setInvoiceData(prev => ({
@@ -278,8 +285,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ invoiceMemoToLoad, onSaveSucc
         }
     };
 
-    const handleServiceChange2 = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const productItem = e.target.value;
+    const handleServiceChange2 = (productItem: string) => {
         const selectedService = services.find(service => service[3] === productItem);
 
         if (selectedService) {
@@ -322,18 +328,24 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ invoiceMemoToLoad, onSaveSucc
     if (isLoading) {
         return <div className="flex justify-center items-center h-64"><Spinner /></div>;
     }
+    
+    const serviceOptions = services.map((service) => ({
+        value: service[3],
+        label: `${service[0]} (${service[1]}) - ${service[2]}`
+    }));
+
 
     return (
-        <form>
+        <form onSubmit={(e) => { e.preventDefault(); handleSave(); }}>
             <div className="bg-white p-4 shadow-lg rounded-lg border border-gray-300">
                 {/* Header */}
                 <div className="flex justify-between items-center border border-gray-400 p-2">
                     <div className="flex items-center">
-                        <img src="https://yo.fan/cdn/media-store%2Fpublic%2FOQcIlej0eQWI7C5URGLGQyDjTUk2%2F26033ce2-5d15-421c-bb76-ad85eb7ac7ff%2F794-450.jpg" alt="Logo" className="h-16 mr-4"/>
+                        <img src="https://yo.fan/cdn/media-store%2Fpublic%2FOQcIlej0eQWI7C5URGLGQyDjTUk2%2Fde497828-75aa-4a76-8f9b-801016ba98b1%2F794-450.jpg" alt="SBT Transport Logo" className="h-24 w-auto mr-4"/>
                         <div>
-                            <h1 className="text-xl font-bold text-blue-700">SREE VENKATESWARA TRANSPORT</h1>
+                            <h1 className="text-xl font-bold text-blue-700">SRI BALAJI TRANSPORT</h1>
                             <p className="text-xs font-bold">NO:3/96, Kumaran Kudil Annex 3rd Street, Thuraipakkam, Chennai-97</p>
-                            <p className="text-xs font-bold">Phone: 87789-92624, 97907-24160 | Email: svtransport.75@gmail.com</p>
+                            <p className="text-xs font-bold">Phone: 87789-92624, 97907-24160 | Email: sbttransport.75@gmail.com</p>
                         </div>
                     </div>
                     <div className="w-1/4 space-y-1">
@@ -361,10 +373,12 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ invoiceMemoToLoad, onSaveSucc
                     <div className="col-span-6 border-r border-gray-400 p-2 space-y-1">
                          <div className="flex items-center">
                             <label className="text-xs font-bold w-32">Customer Name:</label>
-                            <input name="customers_name" list="customer-list" value={invoiceData.customers_name} onChange={e => handleCustomerNameChange(e.target.value)} className="p-1 border border-gray-400 rounded-sm w-full text-sm font-bold" />
-                            <datalist id="customer-list">
-                                {customerNames.map(name => <option key={name} value={name} />)}
-                            </datalist>
+                             <ComboBox
+                                value={invoiceData.customers_name}
+                                onChange={handleCustomerNameChange}
+                                options={customerNames.map(name => ({ value: name, label: name }))}
+                                placeholder="Type or select a customer..."
+                            />
                         </div>
                          <div className="flex items-center">
                             <label className="text-xs font-bold w-32">Address 1:</label>
@@ -401,14 +415,12 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ invoiceMemoToLoad, onSaveSucc
                     </div>
                      <div className="grid grid-cols-12 items-center border-b border-gray-400">
                         <div className="col-span-6 p-1 border-r border-gray-400">
-                            <InvoiceSelect name="products_item" value={invoiceData.products_item} onChange={handleServiceChange}>
-                                <option value="">Select Service</option>
-                                {services.map((service, index) => (
-                                    <option key={index} value={service[3]}>
-                                        {`${service[0]} (${service[1]}) - ${service[2]}`}
-                                    </option>
-                                ))}
-                            </InvoiceSelect>
+                             <ComboBox
+                                value={invoiceData.products_item}
+                                onChange={handleServiceChange}
+                                options={serviceOptions}
+                                placeholder="Type or select a service..."
+                            />
                         </div>
                         <div className="col-span-1 p-1 border-r border-gray-400"><InvoiceInput name="trips_minimum_hours1" value={invoiceData.trips_minimum_hours1} readOnly/></div>
                         <div className="col-span-2 p-1 border-r border-gray-400"><InvoiceInput disabled/></div>
@@ -416,14 +428,12 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ invoiceMemoToLoad, onSaveSucc
                     </div>
                      <div className="grid grid-cols-12 items-center border-b border-gray-400">
                         <div className="col-span-6 p-1 border-r border-gray-400">
-                           <InvoiceSelect name="products_item2" value={invoiceData.products_item2} onChange={handleServiceChange2}>
-                                <option value="">Select Service</option>
-                                {services.map((service, index) => (
-                                    <option key={index} value={service[3]}>
-                                        {`${service[0]} (${service[1]}) - ${service[2]}`}
-                                    </option>
-                                ))}
-                            </InvoiceSelect>
+                           <ComboBox
+                                value={invoiceData.products_item2}
+                                onChange={handleServiceChange2}
+                                options={serviceOptions}
+                                placeholder="Type or select a service..."
+                            />
                         </div>
                         <div className="col-span-1 p-1 border-r border-gray-400"><InvoiceInput name="trips_minimum_hours2" value={invoiceData.trips_minimum_hours2} readOnly/></div>
                         <div className="col-span-2 p-1 border-r border-gray-400"><InvoiceInput disabled/></div>
@@ -508,13 +518,13 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ invoiceMemoToLoad, onSaveSucc
                  <div className="grid grid-cols-12 border border-t-0 border-gray-400">
                     <div className="col-span-8 p-2 border-r border-gray-400">
                          <h5 className="font-bold text-sm">BANK DETAILS:</h5>
-                        <p className="text-xs"><strong>Bank Name:</strong> KARUR VYSHYA BANK</p>
-                        <p className="text-xs"><strong>Branch:</strong> WHITES ROAD</p>
-                        <p className="text-xs"><strong>A/C No:</strong> 1219115000010252</p>
-                        <p className="text-xs"><strong>IFSC:</strong> KVBL0001219</p>
+                        <p className="text-xs"><strong>Bank Name:</strong> STATE BANK OF INDIA</p>
+                        <p className="text-xs"><strong>Branch:</strong> ELDAMS ROAD BRANCH ALWARPET</p>
+                        <p className="text-xs"><strong>A/C No:</strong> 42804313699</p>
+                        <p className="text-xs"><strong>IFSC:</strong> SBIN0002209</p>
                     </div>
                     <div className="col-span-4 p-2 text-center self-end">
-                        <p className="font-bold">SREE VENKATESWARA TRANSPORT</p>
+                        <p className="font-bold">SRI BALAJI TRANSPORT</p>
                         <p className="text-sm mt-8 border-t border-gray-500 pt-1">Authorized Signatory</p>
                     </div>
                  </div>
@@ -523,7 +533,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ invoiceMemoToLoad, onSaveSucc
              <div className="flex justify-end space-x-4 mt-6 print-hide">
                 <Button type="button" onClick={() => window.print()} className="bg-green-600 hover:bg-green-700">Print</Button>
                 <Button type="button" onClick={onCancel} className="bg-gray-500 hover:bg-gray-600">Cancel</Button>
-                <Button type="button" onClick={handleSave} disabled={isSaving}>
+                <Button type="submit" disabled={isSaving}>
                     {isSaving ? <Spinner /> : 'Save Invoice'}
                 </Button>
             </div>
