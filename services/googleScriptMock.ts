@@ -4,7 +4,7 @@ import { VEHICLE_TYPES } from '../constants';
 // --- INITIAL MOCK DATA (for seeding the database on first load) ---
 const initialInvoices: InvoiceData[] = [
     {
-        trips_memo_no: 'SBT-001', trip_operated_date1: '2024-07-28', trip_upto_operated_date2: '',
+        trips_memo_no: 'SVS-001', trip_operated_date1: '2024-07-28', trip_upto_operated_date2: '',
         trips_vehicle_no: 'TN01AB1234', trips_vehicle_type: 'TATA ACE', customers_name: 'John Doe', customers_address1: '123 Main St', customers_address2: 'Anytown',
         trips_starting_time1: '09:00', trips_closing_time1: '13:00', trips_starting_time2: '', trips_closing_time2: '',
         trips_total_hours: '4.00', trips_startingKm1: '1000', trips_closingKm1: '1050', trips_startingKm2: '',
@@ -66,114 +66,7 @@ const initialAreasData: string[][] = [
 ];
 const initialCalculationsData: string[][] = [
     ["products_type_category", "products_minimum_hours", "products_minimum_km", "products_minimum_charges", "products_additional_hours_charges", "products_running_hours", "products_driver_bata"],
-    ["Transport_1000 Kg_Area 1", "2", "20", "600", "180", "0", "25"],
-    ["Transport_2000 Kg_Area 1", "2", "20", "900", "200", "0", "25"],
-    ["Transport_3000 Kg_Area 1", "2", "20", "1000", "220", "0", "25"],
-    ["Transport_DCM Toyota_Area 1", "2", "20", "1200", "260", "0", "25"],
-    ["Transport_17 Feet_Area 1", "2", "20", "1350", "300", "0", "25"],
-    ["Transport_20 Feet_Area 1", "2", "20", "1450", "320", "0", "25"],
-    ["Transport_1000 Kg_Area 2", "2", "30", "800", "180", "1", "25"],
-    ["Transport_2000 Kg_Area 2", "2", "30", "1000", "200", "1", "25"],
-    ["Transport_3000 Kg_Area 2", "2", "30", "1100", "220", "1", "25"],
-    ["Transport_DCM Toyota_Area 2", "2", "30", "1350", "260", "1", "25"],
-    ["Transport_17 Feet_Area 2", "2", "30", "1550", "300", "1", "25"],
-    ["Transport_20 Feet_Area 2", "2", "30", "1650", "320", "1", "25"],
-    ["Transport_1000 Kg_Area 3", "2", "50", "1000", "180", "1.25", "25"],
-    ["Transport_2000 Kg_Area 3", "2", "50", "1300", "200", "1.25", "25"],
-    ["Transport_3000 Kg_Area 3", "2", "50", "1400", "220", "1.25", "25"],
-    ["Transport_DCM Toyota_Area 3", "2", "50", "1500", "260", "1.25", "25"],
-    ["Transport_17 Feet_Area 3", "2", "50", "1750", "300", "1.25", "25"],
-    ["Transport_20 Feet_Area 3", "2", "50", "1850", "320", "1.25", "25"],
-    ["Transport_1000 Kg_Area 4", "3.5", "70", "1300", "180", "1.5", "25"],
-    ["Transport_2000 Kg_Area 4", "3.5", "70", "1700", "200", "1.5", "25"],
-    ["Transport_3000 Kg_Area 4", "3.5", "70", "1900", "220", "1.5", "25"],
-    ["Transport_DCM Toyota_Area 4", "3.5", "70", "2200", "260", "1.5", "25"],
-    ["Transport_17 Feet_Area 4", "3.5", "70", "2400", "300", "1.5", "25"],
-    ["Transport_20 Feet_Area 4", "3.5", "70", "2600", "320", "1.5", "25"],
-    ["Transport_1000 Kg_Area 5", "4.5", "80", "1500", "180", "1.75", "25"],
-    ["Transport_2000 Kg_Area 5", "4.5", "80", "2000", "200", "1.75", "25"],
-    ["Transport_3000 Kg_Area 5", "4.5", "80", "2200", "220", "1.75", "25"],
-    ["Transport_DCM Toyota_Area 5", "4.5", "80", "2500", "260", "1.75", "25"],
-    ["Transport_17 Feet_Area 5", "4.5", "80", "2800", "300", "1.75", "25"],
-    ["Transport_20 Feet_Area 5", "4.5", "80", "3000", "320", "1.75", "25"],
-    ["Transport_1000 Kg_Area 6", "5", "90", "1700", "180", "2", "25"],
-    ["Transport_2000 Kg_Area 6", "5", "90", "2200", "200", "2", "25"],
-    ["Transport_3000 Kg_Area 6", "5", "90", "2400", "220", "2", "25"],
-    ["Transport_DCM Toyota_Area 6", "5", "90", "2700", "260", "2", "25"],
-    ["Transport_17 Feet_Area 6", "5", "90", "3000", "300", "2", "25"],
-    ["Transport_20 Feet_Area 6", "5", "90", "3200", "320", "2", "25"],
-    ["Transport_1000 Kg_Area 7", "5.5", "110", "1900", "180", "2.5", "25"],
-    ["Transport_2000 Kg_Area 7", "5.5", "110", "2500", "200", "2.5", "25"],
-    ["Transport_3000 Kg_Area 7", "5.5", "110", "2750", "220", "2.5", "25"],
-    ["Transport_DCM Toyota_Area 7", "5.5", "110", "3200", "260", "2.5", "25"],
-    ["Transport_17 Feet_Area 7", "5.5", "110", "3500", "300", "2.5", "25"],
-    ["Transport_20 Feet_Area 7", "5.5", "110", "3700", "320", "2.5", "25"],
-    ["Transport_1000 Kg_Area 8", "6", "150", "2300", "180", "3", "25"],
-    ["Transport_2000 Kg_Area 8", "6", "150", "2900", "200", "3", "25"],
-    ["Transport_3000 Kg_Area 8", "6", "150", "3200", "220", "3", "25"],
-    ["Transport_DCM Toyota_Area 8", "6", "150", "3600", "260", "3", "25"],
-    ["Transport_17 Feet_Area 8", "6", "150", "4200", "300", "3", "25"],
-    ["Transport_20 Feet_Area 8", "6", "150", "4400", "320", "3", "25"],
-    ["Transport_1000 Kg_Area 9", "8", "200", "2800", "180", "3.5", "25"],
-    ["Transport_2000 Kg_Area 9", "8", "200", "3700", "200", "3.5", "25"],
-    ["Transport_3000 Kg_Area 9", "8", "200", "4100", "220", "3.5", "25"],
-    ["Transport_DCM Toyota_Area 9", "8", "200", "4500", "260", "3.5", "25"],
-    ["Transport_17 Feet_Area 9", "8", "200", "5200", "300", "3.5", "25"],
-    ["Transport_20 Feet_Area 9", "8", "200", "5400", "320", "3.5", "25"],
-    ["VIKING_17 Feet_Area 1", "2", "20", "1250", "300", "0", "25"],
-    ["VIKING_17 Feet_Area 2", "2", "30", "1450", "300", "1", "25"],
-    ["VIKING_17 Feet_Area 3", "2", "50", "1650", "300", "1.25", "25"],
-    ["VIKING_17 Feet_Area 4", "3.5", "70", "2200", "300", "1.5", "25"],
-    ["VIKING_17 Feet_Area 5", "4.5", "80", "2600", "300", "1.75", "25"],
-    ["VIKING_17 Feet_Area 6", "5", "90", "2800", "300", "2", "25"],
-    ["VIKING_17 Feet_Area 7", "5.5", "110", "3500", "300", "2.5", "25"],
-    ["VIKING_17 Feet_Area 8", "6", "150", "3400", "300", "3", "25"],
-    ["VIKING_17 Feet_Area 9", "8", "200", "4100", "300", "3.5", "25"],
-    ["VIKING_20 Feet_Area 1", "2", "20", "0", "320", "0", "25"],
-    ["VIKING_20 Feet_Area 2", "2", "30", "0", "320", "1", "25"],
-    ["VIKING_20 Feet_Area 3", "2", "50", "0", "320", "1.25", "25"],
-    ["VIKING_20 Feet_Area 4", "3.5", "70", "0", "320", "1.5", "25"],
-    ["VIKING_20 Feet_Area 5", "4.5", "80", "0", "320", "1.75", "25"],
-    ["VIKING_20 Feet_Area 6", "5", "90", "0", "320", "2", "25"],
-    ["VIKING_20 Feet_Area 7", "5.5", "110", "0", "320", "2.5", "25"],
-    ["VIKING_20 Feet_Area 8", "6", "150", "0", "320", "3", "25"],
-    ["VIKING_20 Feet_Area 9", "8", "200", "0", "320", "3.5", "25"],
-    ["VIKING_407_Area 1", "2", "20", "900", "200", "0", "25"],
-    ["VIKING_407_Area 2", "2", "30", "1000", "200", "1", "25"],
-    ["VIKING_407_Area 3", "2", "50", "1250", "200", "1.25", "25"],
-    ["VIKING_407_Area 4", "3.5", "70", "1700", "200", "1.5", "25"],
-    ["VIKING_407_Area 5", "4.5", "80", "2000", "200", "1.75", "25"],
-    ["VIKING_407_Area 6", "5", "90", "2200", "200", "2", "25"],
-    ["VIKING_407_Area 7", "5.5", "110", "2750", "220", "2.5", "25"],
-    ["VIKING_407_Area 8", "6", "150", "2700", "200", "3", "25"],
-    ["VIKING_407_Area 9", "8", "200", "3400", "200", "3.5", "25"],
-    ["VIKING_DCM Toyota_Area 1", "2", "20", "1100", "260", "0", "25"],
-    ["VIKING_DCM Toyota_Area 2", "2", "30", "1250", "260", "1", "25"],
-    ["VIKING_DCM Toyota_Area 3", "2", "50", "1400", "260", "1.25", "25"],
-    ["VIKING_DCM Toyota_Area 4", "3.5", "70", "1900", "260", "1.5", "25"],
-    ["VIKING_DCM Toyota_Area 5", "4.5", "80", "2200", "260", "1.75", "25"],
-    ["VIKING_DCM Toyota_Area 6", "5", "90", "2500", "260", "2", "25"],
-    ["VIKING_DCM Toyota_Area 7", "5.5", "110", "3200", "260", "2.5", "25"],
-    ["VIKING_DCM Toyota_Area 8", "6", "150", "3100", "260", "3", "25"],
-    ["VIKING_DCM Toyota_Area 9", "8", "200", "3700", "260", "3.5", "25"],
-    ["VIKING_DOST_Area 1", "2", "20", "800", "180", "0", "25"],
-    ["VIKING_DOST_Area 2", "2", "30", "900", "180", "1", "25"],
-    ["VIKING_DOST_Area 3", "2", "50", "1200", "180", "1.25", "25"],
-    ["VIKING_DOST_Area 4", "3.5", "70", "1600", "180", "1.5", "25"],
-    ["VIKING_DOST_Area 5", "4.5", "80", "1800", "180", "1.75", "25"],
-    ["VIKING_DOST_Area 6", "5", "90", "2000", "180", "2", "25"],
-    ["VIKING_DOST_Area 7", "5.5", "110", "2500", "200", "2.5", "25"],
-    ["VIKING_DOST_Area 8", "6", "150", "2500", "180", "3", "25"],
-    ["VIKING_DOST_Area 9", "8", "200", "3200", "180", "3.5", "25"],
-    ["VIKING_TATA ACE_Area 1", "2", "20", "600", "160", "0", "25"],
-    ["VIKING_TATA ACE_Area 2", "2", "30", "800", "160", "1", "25"],
-    ["VIKING_TATA ACE_Area 3", "2", "50", "1000", "160", "1.25", "25"],
-    ["VIKING_TATA ACE_Area 4", "3.5", "70", "1300", "160", "1.5", "25"],
-    ["VIKING_TATA ACE_Area 5", "4.5", "80", "1500", "160", "1.75", "25"],
-    ["VIKING_TATA ACE_Area 6", "5", "90", "1700", "160", "2", "25"],
-    ["VIKING_TATA ACE_Area 7", "5.5", "110", "1900", "180", "2.5", "25"],
-    ["VIKING_TATA ACE_Area 8", "6", "150", "2300", "160", "3", "25"],
-    ["VIKING_TATA ACE_Area 9", "8", "200", "2300", "160", "3.5", "25"]
+    ["17 Feet_Area 1", "2", "20", "1350", "300", "0", "25"],["17 Feet_Area 2", "2", "30", "1550", "300", "1", "25"],["17 Feet_Area 3", "2", "50", "1750", "300", "1.25", "25"],["17 Feet_Area 4", "3.5", "70", "2400", "300", "1.5", "25"],["17 Feet_Area 5", "4.5", "80", "2800", "300", "1.75", "25"],["17 Feet_Area 6", "5", "90", "3000", "300", "2", "25"],["17 Feet_Area 7", "5.5", "110", "3500", "300", "2.5", "25"],["17 Feet_Area 8", "6", "150", "4200", "300", "3", "25"],["17 Feet_Area 9", "8", "200", "5200", "300", "3.5", "25"],["20 Feet_Area 1", "2", "20", "1450", "320", "0", "25"],["20 Feet_Area 2", "2", "30", "1650", "320", "1", "25"],["20 Feet_Area 3", "2", "50", "1850", "320", "1.25", "25"],["20 Feet_Area 4", "3.5", "70", "2600", "320", "1.5", "25"],["20 Feet_Area 5", "4.5", "80", "3000", "320", "1.75", "25"],["20 Feet_Area 6", "5", "90", "3200", "320", "2", "25"],["20 Feet_Area 7", "5.5", "110", "3700", "320", "2.5", "25"],["20 Feet_Area 8", "6", "150", "4400", "320", "3", "25"],["20 Feet_Area 9", "8", "200", "5400", "320", "3.5", "25"],["407_Area 1", "2", "20", "1000", "220", "0", "25"],["407_Area 2", "2", "30", "1100", "220", "1", "25"],["407_Area 3", "2", "50", "1400", "220", "1.25", "25"],["407_Area 4", "3.5", "70", "1900", "220", "1.5", "25"],["407_Area 5", "4.5", "80", "2200", "220", "1.75", "25"],["407_Area 6", "5", "90", "2400", "220", "2", "25"],["407_Area 7", "5.5", "110", "2750", "220", "2.5", "25"],["407_Area 8", "6", "150", "3200", "220", "3", "25"],["407_Area 9", "8", "200", "4100", "220", "3.5", "25"],["DCM Toyota_Area 1", "2", "20", "1200", "260", "0", "25"],["DCM Toyota_Area 2", "2", "30", "1350", "260", "1", "25"],["DCM Toyota_Area 3", "2", "50", "1500", "260", "1.25", "25"],["DCM Toyota_Area 4", "3.5", "70", "2200", "260", "1.5", "25"],["DCM Toyota_Area 5", "4.5", "80", "2500", "260", "1.75", "25"],["DCM Toyota_Area 6", "5", "90", "2700", "260", "2", "25"],["DCM Toyota_Area 7", "5.5", "110", "3200", "260", "2.5", "25"],["DCM Toyota_Area 8", "6", "150", "3600", "260", "3", "25"],["DCM Toyota_Area 9", "8", "200", "4500", "260", "3.5", "25"],["DOST_Area 1", "2", "20", "900", "200", "0", "25"],["DOST_Area 2", "2", "30", "1000", "200", "1", "25"],["DOST_Area 3", "2", "50", "1300", "200", "1.25", "25"],["DOST_Area 4", "3.5", "70", "1700", "200", "1.5", "25"],["DOST_Area 5", "4.5", "80", "2000", "200", "1.75", "25"],["DOST_Area 6", "5", "90", "2200", "200", "2", "25"],["DOST_Area 7", "5.5", "110", "2500", "200", "2.5", "25"],["DOST_Area 8", "6", "150", "2900", "200", "3", "25"],["DOST_Area 9", "8", "200", "3700", "200", "3.5", "25"],["TATA ACE_Area 1", "2", "20", "600", "180", "0", "25"],["TATA ACE_Area 2", "2", "30", "800", "180", "1", "25"],["TATA ACE_Area 3", "2", "50", "1000", "180", "1.25", "25"],["TATA ACE_Area 4", "3.5", "70", "1300", "180", "1.5", "25"],["TATA ACE_Area 5", "4.5", "80", "1500", "180", "1.75", "25"],["TATA ACE_Area 6", "5", "90", "1700", "180", "2", "25"],["TATA ACE_Area 7", "5.5", "110", "1900", "180", "2.5", "25"],["TATA ACE_Area 8", "6", "150", "2300", "180", "3", "25"],["TATA ACE_Area 9", "8", "200", "2800", "180", "3.5", "25"]
 ];
 const initialLookupData: string[][] = [
     ["driver_name", "license_number", "phone"],
@@ -182,7 +75,7 @@ const initialLookupData: string[][] = [
 ];
 
 // --- Database Service (IndexedDB) ---
-const DB_NAME = 'SBT_AdminDB';
+const DB_NAME = 'SVT_AdminDB';
 const DB_VERSION = 1;
 let db: IDBDatabase | null = null;
 
@@ -287,7 +180,7 @@ export const generateNewMemoNumber = async (): Promise<string> => {
             if (!isNaN(num) && num > maxNum) maxNum = num;
         }
     });
-    return `SBT-${String(maxNum + 1).padStart(3, '0')}`;
+    return `SVS-${String(maxNum + 1).padStart(3, '0')}`;
 };
 
 export const updateCustomerAddresses = async (customerName: string): Promise<CustomerAddress[]> => {
@@ -335,37 +228,26 @@ export const getViewAllServicesData = async (): Promise<string[][]> => {
     const calculationMap = new Map<string, Calculation>();
     calculations.forEach(calc => calculationMap.set(calc.products_type_category, calc));
     
-    const BRANDS = ["Transport", "VIKING"];
-
     const generatedData: string[][] = [];
     for (const area of areas) {
         for (const vehicleType of VEHICLE_TYPES) {
-            for (const brand of BRANDS) {
-                const lookupKey = `${brand}_${vehicleType}_${area.locationCategory}`;
-                const calcData = calculationMap.get(lookupKey);
-                
-                if (calcData) {
-                    const productItem = `${brand}_${area.locationCategory}_${area.locationArea}_${vehicleType}`.replace(/ /g, '_');
-                    
-                    let driverBata = calcData.products_driver_bata;
-                    if (brand === 'VIKING' && area.locationArea !== 'Chengalpet') {
-                        driverBata = '0';
-                    }
-
-                    generatedData.push([
-                        area.locationArea,
-                        area.locationCategory,
-                        `${brand} - ${vehicleType}`,
-                        productItem,
-                        calcData.products_minimum_hours,
-                        calcData.products_minimum_km,
-                        calcData.products_minimum_charges,
-                        calcData.products_additional_hours_charges,
-                        calcData.products_running_hours,
-                        driverBata,
-                        vehicleType, // Raw vehicle type
-                    ]);
-                }
+            const lookupKey = `${vehicleType}_${area.locationCategory}`;
+            const calcData = calculationMap.get(lookupKey);
+            
+            if (calcData) {
+                const productItem = `${area.locationCategory}_${area.locationArea}_${vehicleType}`.replace(/ /g, '_');
+                generatedData.push([
+                    area.locationArea,
+                    area.locationCategory,
+                    vehicleType,
+                    productItem,
+                    calcData.products_minimum_hours,
+                    calcData.products_minimum_km,
+                    calcData.products_minimum_charges,
+                    calcData.products_additional_hours_charges,
+                    calcData.products_running_hours,
+                    calcData.products_driver_bata,
+                ]);
             }
         }
     }

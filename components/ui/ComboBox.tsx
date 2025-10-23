@@ -1,25 +1,32 @@
-import React, { useState, useRef, useEffect, useMemo } from 'react';
-
-interface ComboBoxOption {
-  value: string;
-  label: string;
-}
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 
 interface ComboBoxProps {
-  options: ComboBoxOption[];
-  value: string;
-  onChange: (value: string) => void;
+  label: string;
+  id: string;
+  options: { value: string | number; label: string }[];
+  value: string | number;
+  onChange: (value: string | number) => void;
   placeholder?: string;
-  id?: string;
-  name?: string;
 }
 
-const ComboBox: React.FC<ComboBoxProps> = ({ options, value, onChange, placeholder = "Select...", id, name }) => {
-  const [isOpen, setIsOpen] = useState(false);
+const ComboBox: React.FC<ComboBoxProps> = ({ label, id, options, value, onChange, placeholder }) => {
   const [inputValue, setInputValue] = useState('');
-  const [highlightedIndex, setHighlightedIndex] = useState(-1);
+  const [isOpen, setIsOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+
+  const filteredOptions = useMemo(() => {
+    if (!inputValue) {
+      return options;
+    }
+    const selectedOption = options.find(option => option.value === value);
+    if (selectedOption && selectedOption.label === inputValue) {
+        return options;
+    }
+
+    return options.filter(option =>
+      option.label.toLowerCase().includes(inputValue.toLowerCase())
+    );
+  }, [inputValue, options, value]);
 
   useEffect(() => {
     const selectedOption = options.find(option => option.value === value);
@@ -27,109 +34,64 @@ const ComboBox: React.FC<ComboBoxProps> = ({ options, value, onChange, placehold
   }, [value, options]);
 
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
+    function handleClickOutside(event: MouseEvent) {
       if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
         setIsOpen(false);
+        const selectedOption = options.find(option => option.value === value);
+        setInputValue(selectedOption ? selectedOption.label : ''); // Reset on close if no selection
       }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
+    }
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, []);
-
-  const filteredOptions = useMemo(() => {
-    if (!inputValue) {
-      return options;
+  }, [wrapperRef, value, options]);
+  
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const term = e.target.value;
+    setInputValue(term);
+    setIsOpen(true);
+    if (term === '') {
+        onChange('');
     }
-    // If the input value exactly matches the label of the selected value, show all options.
-    const selectedOption = options.find(option => option.value === value);
-    if (selectedOption && selectedOption.label === inputValue) {
-        return options;
-    }
-    return options.filter(option =>
-      option.label.toLowerCase().includes(inputValue.toLowerCase())
-    );
-  }, [options, inputValue, value]);
+  };
 
-  const handleSelectOption = (option: ComboBoxOption) => {
-    onChange(option.value);
-    setInputValue(option.label);
+  const handleOptionClick = (optionValue: string | number) => {
+    onChange(optionValue);
     setIsOpen(false);
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setInputValue(e.target.value);
-    // If user clears the input, call onChange with an empty string
-    if (e.target.value === '') {
-        onChange('');
-    }
-    setIsOpen(true);
-    setHighlightedIndex(-1); // Reset highlight on text change
-  };
-  
-  const handleInputFocus = () => {
-    setIsOpen(true);
-    setHighlightedIndex(-1);
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      setHighlightedIndex(prev => (prev < filteredOptions.length - 1 ? prev + 1 : prev));
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      setHighlightedIndex(prev => (prev > 0 ? prev - 1 : 0));
-    } else if (e.key === 'Enter') {
-      e.preventDefault();
-      if (highlightedIndex >= 0 && highlightedIndex < filteredOptions.length) {
-        handleSelectOption(filteredOptions[highlightedIndex]);
-      } else if (filteredOptions.length > 0) {
-        handleSelectOption(filteredOptions[0]);
-      }
-    } else if (e.key === 'Escape') {
-      setIsOpen(false);
-    }
-  };
-
   return (
-    <div ref={wrapperRef} className="relative w-full">
-      <input
-        ref={inputRef}
-        type="text"
-        id={id}
-        name={name}
-        value={inputValue}
-        onChange={handleInputChange}
-        onFocus={handleInputFocus}
-        onKeyDown={handleKeyDown}
-        placeholder={placeholder}
-        className="p-1 border border-gray-400 rounded-sm w-full text-sm font-bold bg-white"
-        autoComplete="off"
-      />
+    <div className="flex flex-col" ref={wrapperRef}>
+      <label htmlFor={id} className="mb-2 font-medium text-sm text-gray-700">
+        {label}
+      </label>
+      <div className="relative">
+        <input
+          id={id}
+          type="text"
+          value={inputValue}
+          onChange={handleInputChange}
+          onFocus={() => setIsOpen(true)}
+          placeholder={placeholder}
+          className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white transition-shadow duration-200 w-full"
+          autoComplete="off"
+        />
+        <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+            <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+        </div>
+      </div>
       {isOpen && (
-        <ul
-          className="absolute z-10 w-full bg-white border border-gray-300 rounded-md mt-1 max-h-60 overflow-y-auto shadow-lg"
-          role="listbox"
-        >
-          {filteredOptions.length > 0 ? (
-            filteredOptions.map((option, index) => (
-              <li
-                key={option.value}
-                onClick={() => handleSelectOption(option)}
-                onMouseEnter={() => setHighlightedIndex(index)}
-                className={`px-3 py-2 cursor-pointer text-sm ${
-                  index === highlightedIndex ? 'bg-blue-100' : 'hover:bg-gray-100'
-                }`}
-                role="option"
-                aria-selected={value === option.value}
-              >
-                {option.label}
-              </li>
-            ))
-          ) : (
-            <li className="px-3 py-2 text-sm text-gray-500">No options found</li>
-          )}
+        <ul className="absolute z-10 w-full bg-white border border-gray-300 rounded-lg mt-1 max-h-60 overflow-y-auto shadow-lg top-full">
+          {filteredOptions.length > 0 ? filteredOptions.map(option => (
+            <li
+              key={option.value}
+              onClick={() => handleOptionClick(option.value)}
+              className="px-4 py-2 cursor-pointer hover:bg-gray-100"
+            >
+              {option.label}
+            </li>
+          )) : <li className="px-4 py-2 text-gray-500">No options found</li>}
         </ul>
       )}
     </div>
