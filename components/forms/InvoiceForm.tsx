@@ -81,14 +81,15 @@ const InvoiceTextarea = (props: React.TextareaHTMLAttributes<HTMLTextAreaElement
 const InvoiceComboBox = ({ options, value, onChange, placeholder }: { options: { value: string; label: string }[], value: string, onChange: (value: string) => void, placeholder?: string }) => {
     const [inputValue, setInputValue] = useState('');
     const [isOpen, setIsOpen] = useState(false);
+    const [highlightedIndex, setHighlightedIndex] = useState(-1);
     const wrapperRef = useRef<HTMLDivElement>(null);
+    const inputRef = useRef<HTMLInputElement>(null);
+    const listRef = useRef<HTMLUListElement>(null);
 
     const filteredOptions = useMemo(() => {
-        if (!inputValue) {
-            return options;
-        }
+        if (!inputValue) return options;
         const selectedOption = options.find(o => o.value === value);
-        if (selectedOption && selectedOption.label === inputValue) {
+        if (selectedOption && selectedOption.label.toLowerCase() === inputValue.toLowerCase()) {
             return options;
         }
         return options.filter(option =>
@@ -100,56 +101,117 @@ const InvoiceComboBox = ({ options, value, onChange, placeholder }: { options: {
         const selectedOption = options.find(option => option.value === value);
         setInputValue(selectedOption ? selectedOption.label : '');
     }, [value, options]);
+    
+    useEffect(() => {
+        setHighlightedIndex(0);
+    }, [filteredOptions]);
 
     useEffect(() => {
-        function handleClickOutside(event: MouseEvent) {
+        const handleClickOutside = (event: MouseEvent) => {
             if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
                 setIsOpen(false);
                 const selectedOption = options.find(option => option.value === value);
                 setInputValue(selectedOption ? selectedOption.label : '');
             }
-        }
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => {
-            document.removeEventListener("mousedown", handleClickOutside);
         };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
     }, [wrapperRef, value, options]);
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const term = e.target.value;
-        setInputValue(term);
-        setIsOpen(true);
-        // Allow free text entry for new customers
-        onChange(term);
-    };
+    useEffect(() => {
+        if (isOpen && highlightedIndex >= 0 && listRef.current) {
+            const el = listRef.current.children[highlightedIndex] as HTMLLIElement;
+            if (el) {
+                el.scrollIntoView({ block: 'nearest' });
+            }
+        }
+    }, [isOpen, highlightedIndex]);
 
-    const handleOptionClick = (optionValue: string) => {
+    const handleSelectOption = (optionValue: string) => {
         onChange(optionValue);
         setIsOpen(false);
+        setHighlightedIndex(-1);
+        inputRef.current?.focus();
     };
 
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (!isOpen) {
+            if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                e.preventDefault();
+                setIsOpen(true);
+            }
+            return;
+        }
+
+        switch (e.key) {
+            case 'ArrowDown':
+                e.preventDefault();
+                setHighlightedIndex(prev => (prev + 1) % filteredOptions.length);
+                break;
+            case 'ArrowUp':
+                e.preventDefault();
+                setHighlightedIndex(prev => (prev - 1 + filteredOptions.length) % filteredOptions.length);
+                break;
+            case 'Enter':
+                e.preventDefault();
+                if (isOpen && highlightedIndex >= 0 && filteredOptions[highlightedIndex]) {
+                    handleSelectOption(filteredOptions[highlightedIndex].value);
+                }
+                break;
+            case 'Escape':
+                setIsOpen(false);
+                const selectedOption = options.find(option => option.value === value);
+                setInputValue(selectedOption ? selectedOption.label : '');
+                setHighlightedIndex(-1);
+                break;
+            case 'Tab':
+                setIsOpen(false);
+                setHighlightedIndex(-1);
+                break;
+        }
+    };
+    
     return (
-        <div className="relative w-full" ref={wrapperRef}>
-            <input
-                type="text"
-                value={inputValue}
-                onChange={handleInputChange}
-                onFocus={() => setIsOpen(true)}
-                placeholder={placeholder}
-                className="p-1 border border-gray-400 rounded-sm w-full text-sm font-bold bg-white"
-                autoComplete="off"
-            />
+        <div className="relative w-full" ref={wrapperRef} role="combobox" aria-haspopup="listbox" aria-expanded={isOpen}>
+            <div className="relative">
+                <input
+                    ref={inputRef}
+                    type="text"
+                    value={inputValue}
+                    onChange={(e) => { setInputValue(e.target.value); setIsOpen(true); }}
+                    onFocus={() => setIsOpen(true)}
+                    onKeyDown={handleKeyDown}
+                    placeholder={placeholder}
+                    className="p-1 border border-gray-400 rounded-sm w-full text-sm font-bold bg-white"
+                    autoComplete="off"
+                    aria-autocomplete="list"
+                    aria-controls="combobox-options"
+                    aria-activedescendant={highlightedIndex >= 0 ? `option-${highlightedIndex}` : undefined}
+                />
+                <div className={`absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}>
+                    <svg className="w-3 h-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M19 9l-7 7-7-7"></path></svg>
+                </div>
+            </div>
             {isOpen && (
-                <ul className="absolute z-20 w-full bg-white border border-gray-300 rounded-lg mt-1 max-h-60 overflow-y-auto shadow-lg">
-                    {filteredOptions.length > 0 ? filteredOptions.map(option => (
+                <ul
+                    ref={listRef}
+                    id="combobox-options"
+                    role="listbox"
+                    className="absolute z-20 w-full bg-white border border-gray-300 rounded-md mt-1 max-h-60 overflow-y-auto shadow-lg"
+                >
+                    {filteredOptions.length > 0 ? filteredOptions.map((option, index) => (
                         <li
                             key={option.value}
-                            onClick={() => handleOptionClick(option.value)}
-                            className="px-2 py-1 cursor-pointer hover:bg-gray-100 text-sm"
+                            id={`option-${index}`}
+                            role="option"
+                            aria-selected={highlightedIndex === index}
+                            onClick={() => handleSelectOption(option.value)}
+                            onMouseEnter={() => setHighlightedIndex(index)}
+                            className={`px-2 py-1 cursor-pointer text-sm ${highlightedIndex === index ? 'bg-blue-100 text-blue-900' : 'hover:bg-gray-100'}`}
                         >
                             {option.label}
                         </li>
-                    )) : <li className="px-2 py-1 text-gray-500 text-sm">No customers found</li>}
+                    )) : <li className="px-2 py-1 text-gray-500 text-sm">No options found</li>}
                 </ul>
             )}
         </div>
@@ -320,6 +382,12 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ invoiceMemoToLoad, onSaveSucc
                     ...prev,
                     customers_address1: addresses[0].address1,
                     customers_address2: addresses[0].address2,
+                }));
+            } else {
+                 setInvoiceData(prev => ({
+                    ...prev,
+                    customers_address1: '',
+                    customers_address2: '',
                 }));
             }
         } catch (error) {
