@@ -6,7 +6,7 @@ import Button from './ui/Button';
 import Spinner from './ui/Spinner';
 import Input from './ui/Input';
 import { LOCATION_CATEGORIES } from '../constants';
-import ComboBox from './ui/ComboBox';
+import Select from './ui/Select';
 import { Area } from '../types';
 
 const AreasCRUD: React.FC = () => {
@@ -176,11 +176,11 @@ const AreasCRUD: React.FC = () => {
                                 value={currentRecord.locationArea || ''}
                                 onChange={(e) => handleModalInputChange('locationArea', e.target.value)}
                             />
-                            <ComboBox
+                            <Select
                                 id="locationCategory"
                                 label="Location Category"
                                 value={currentRecord.locationCategory || ''}
-                                onChange={(value) => handleModalInputChange('locationCategory', String(value))}
+                                onChange={(e) => handleModalInputChange('locationCategory', e.target.value)}
                                 options={LOCATION_CATEGORIES.map(c => ({ value: c, label: c }))}
                             />
                         </div>
