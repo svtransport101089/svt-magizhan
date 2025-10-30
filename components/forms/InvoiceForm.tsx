@@ -279,7 +279,7 @@ export const MemoForm: React.FC<MemoFormProps> = ({ memoToLoad, onSaveSuccess, o
             const subTotal = p(prev.trips_minimum_charges1) + p(prev.trips_minimum_charges2) + extraHourAmt + kmAmt + driverBataAmt +
                 p(prev.trips_fixed_amt) + p(prev.trips_toll_amt) + p(prev.trips_permit_amt) + p(prev.trips_night_hault_amt) + p(prev.trips_other_charges_amt);
             
-            const discountableAmount = p(prev.trips_minimum_charges1) + p(prev.trips_minimum_charges2) + extraHourAmt + p(prev.trips_fixed_amt);
+            const discountableAmount = p(prev.trips_minimum_charges1) + p(prev.trips_minimum_charges2) + extraHourAmt + p(prev.trips_fixed_amt) + kmAmt;
             const discountAmt = discountableAmount * (p(prev.trips_discount_percentage) / 100);
             
             const totalAmt = subTotal - discountAmt;
