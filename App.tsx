@@ -4,58 +4,90 @@ import Header from './components/layout/Header';
 import PageWrapper from './components/layout/PageWrapper';
 import CustomerCRUD from './components/CustomerCRUD';
 import ViewServices from './components/ViewServices';
-import InvoiceForm from './components/forms/InvoiceForm';
+import { MemoForm, InvoiceForm, CreateInvoicePage } from './components/forms/InvoiceForm';
 import { ToastProvider } from './hooks/useToast';
 import { Page } from './types';
 import Dashboard from './components/Dashboard';
 import AreasCRUD from './components/AreasCRUD';
 import CalculationsCRUD from './components/CalculationsCRUD';
-import InvoiceCRUD from './components/InvoiceCRUD';
+import { MemoCRUD, InvoiceCRUD } from './components/InvoiceCRUD';
 import LookupCRUD from './components/LookupCRUD';
 
 const App: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<Page>(Page.DASHBOARD);
-  const [editingInvoiceMemo, setEditingInvoiceMemo] = useState<string | null>(null);
+  
+  // State for Memos
+  const [editingMemoNo, setEditingMemoNo] = useState<string | null>(null);
   const [printOnLoad, setPrintOnLoad] = useState(false);
 
+  // State for summary Invoices
+  const [editingInvoiceId, setEditingInvoiceId] = useState<number | null>(null);
+  
   const handleNavigate = (page: Page) => {
-    setEditingInvoiceMemo(null);
+    setEditingMemoNo(null);
+    setEditingInvoiceId(null);
     setPrintOnLoad(false);
     setCurrentPage(page);
   };
 
-  const handleEditInvoice = (memoNo: string) => {
-    setEditingInvoiceMemo(memoNo);
+  const handleEditMemo = (memoNo: string) => {
+    setEditingMemoNo(memoNo);
     setPrintOnLoad(false);
-    setCurrentPage(Page.INVOICE);
+    setCurrentPage(Page.MEMO);
   };
 
-  const handleDownloadInvoice = (memoNo: string) => {
-    setEditingInvoiceMemo(memoNo);
+  const handleDownloadMemo = (memoNo: string) => {
+    setEditingMemoNo(memoNo);
     setPrintOnLoad(true);
-    setCurrentPage(Page.INVOICE);
+    setCurrentPage(Page.MEMO);
+  };
+
+  const handleDownloadInvoice = (invoiceId: number) => {
+    setEditingInvoiceId(invoiceId);
+    setPrintOnLoad(true);
+    setCurrentPage(Page.CREATE_INVOICE);
+  };
+
+  const handleMemoFormClose = () => {
+    setEditingMemoNo(null);
+    setPrintOnLoad(false);
+    setCurrentPage(Page.MANAGE_MEMOS);
   };
 
   const handleInvoiceFormClose = () => {
-    setEditingInvoiceMemo(null);
+    setEditingInvoiceId(null);
     setPrintOnLoad(false);
     setCurrentPage(Page.MANAGE_INVOICES);
-  };
+  }
 
   const renderPage = useMemo(() => {
     switch (currentPage) {
       case Page.DASHBOARD:
         return <Dashboard />;
-      case Page.INVOICE:
-        return <InvoiceForm 
-                  invoiceMemoToLoad={editingInvoiceMemo} 
-                  onSaveSuccess={handleInvoiceFormClose}
-                  onCancel={handleInvoiceFormClose} 
+      case Page.MEMO:
+        return <MemoForm 
+                  memoToLoad={editingMemoNo} 
+                  onSaveSuccess={handleMemoFormClose}
+                  onCancel={handleMemoFormClose} 
                   printOnLoad={printOnLoad}
-                  onPrinted={handleInvoiceFormClose}
+                  onPrinted={handleMemoFormClose}
                />;
+      case Page.MANAGE_MEMOS:
+        return <MemoCRUD onEditMemo={handleEditMemo} onDownloadMemo={handleDownloadMemo} />;
+      case Page.CREATE_INVOICE:
+        if (editingInvoiceId) { // For downloading/viewing existing invoices
+            return <InvoiceForm 
+                      invoiceIdToLoad={editingInvoiceId} 
+                      memoNosToLoad={[]}
+                      onSaveSuccess={handleInvoiceFormClose} 
+                      onCancel={handleInvoiceFormClose}
+                      printOnLoad={printOnLoad}
+                      onPrinted={handleInvoiceFormClose}
+                    />;
+        }
+        return <CreateInvoicePage onSaveSuccess={handleInvoiceFormClose} />;
       case Page.MANAGE_INVOICES:
-        return <InvoiceCRUD onEditInvoice={handleEditInvoice} onDownloadInvoice={handleDownloadInvoice} />;
+        return <InvoiceCRUD onDownloadInvoice={handleDownloadInvoice} />;
       case Page.MANAGE_CUSTOMERS:
         return <CustomerCRUD />;
       case Page.VIEW_ALL_SERVICES:
@@ -69,15 +101,21 @@ const App: React.FC = () => {
       default:
         return <Dashboard />;
     }
-  }, [currentPage, editingInvoiceMemo, printOnLoad]);
+  }, [currentPage, editingMemoNo, printOnLoad, editingInvoiceId]);
 
   const pageTitle = useMemo(() => {
-    if (currentPage === Page.INVOICE && editingInvoiceMemo) {
-      return printOnLoad ? `Download Invoice: ${editingInvoiceMemo}` : `Edit Invoice: ${editingInvoiceMemo}`;
+    if (currentPage === Page.MEMO && editingMemoNo) {
+      return printOnLoad ? `Download Memo: ${editingMemoNo}` : `Edit Memo: ${editingMemoNo}`;
+    }
+     if (currentPage === Page.CREATE_INVOICE) {
+       if (printOnLoad && editingInvoiceId) {
+         return `Download Invoice`;
+       }
+      return editingInvoiceId ? `Edit Invoice: ${editingInvoiceId}` : 'Create New Invoice';
     }
     const pageName = currentPage.replace(/_/g, ' ');
     return pageName.charAt(0).toUpperCase() + pageName.slice(1).toLowerCase();
-  }, [currentPage, editingInvoiceMemo, printOnLoad]);
+  }, [currentPage, editingMemoNo, printOnLoad, editingInvoiceId]);
 
 
   return (

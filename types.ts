@@ -1,6 +1,8 @@
 export enum Page {
     DASHBOARD = 'DASHBOARD',
-    INVOICE = 'INVOICE',
+    MEMO = 'MEMO',
+    MANAGE_MEMOS = 'MANAGE_MEMOS',
+    CREATE_INVOICE = 'CREATE_INVOICE',
     MANAGE_INVOICES = 'MANAGE_INVOICES',
     MANAGE_CUSTOMERS = 'MANAGE_CUSTOMERS',
     VIEW_ALL_SERVICES = 'VIEW_ALL_SERVICES',
@@ -52,7 +54,9 @@ export interface Rates {
     additionalHourRate: number;
 }
 
-export interface InvoiceData {
+export type MemoStatus = 'PENDING' | 'COMPLETED';
+
+export interface MemoData {
     trips_memo_no: string;
     trip_operated_date1: string;
     trip_upto_operated_date2: string;
@@ -112,4 +116,26 @@ export interface InvoiceData {
     trips_balance: string;
     trips_total_amt_in_words: string;
     trips_remark: string;
+    status: MemoStatus;
+}
+
+export interface InvoiceMemoSummary {
+    trips_memo_no: string;
+    trip_operated_date1: string;
+    trips_vehicle_no: string;
+    trips_total_amt: string;
+}
+export interface Invoice {
+    id?: number;
+    invoice_no: string;
+    invoice_date: string;
+    customer_name: string;
+    customer_address1: string;
+    customer_address2: string;
+    memos: InvoiceMemoSummary[];
+    total_amount: string;
+    less_advance: string;
+    balance: string;
+    total_amt_in_words: string;
+    remark: string;
 }

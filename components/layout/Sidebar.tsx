@@ -38,13 +38,15 @@ const NavLink: React.FC<{
 const Sidebar: React.FC<SidebarProps> = ({ currentPage, setCurrentPage }) => {
     const navItems = [
         { page: Page.DASHBOARD, label: "Dashboard", icon: <DashboardIcon /> },
-        { page: Page.INVOICE, label: "Create Invoice", icon: <InvoiceIcon /> },
+        { page: Page.MEMO, label: "Create Memo", icon: <InvoiceIcon /> },
+        { page: Page.MANAGE_MEMOS, label: "Manage Memos", icon: <ListIcon /> },
+        { page: Page.CREATE_INVOICE, label: "Create Invoice", icon: <CreateInvoiceIcon /> },
         { page: Page.MANAGE_INVOICES, label: "Manage Invoices", icon: <ManageInvoicesIcon /> },
         { page: Page.MANAGE_CUSTOMERS, label: "Manage Customers", icon: <AddCustomerIcon /> },
         { page: Page.VIEW_ALL_SERVICES, label: "View All Services", icon: <AddLocationIcon /> },
         { page: Page.MANAGE_AREAS, label: "Manage Areas", icon: <MapIcon /> },
         { page: Page.MANAGE_CALCULATIONS, label: "Manage Calculations", icon: <CalculatorIcon /> },
-        { page: Page.MANAGE_LOOKUP, label: "Manage Lookup", icon: <ListIcon /> },
+        { page: Page.MANAGE_LOOKUP, label: "Manage Lookup", icon: <SearchIcon /> },
     ];
 
     const { addToast } = useToast();
@@ -109,7 +111,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, setCurrentPage }) => {
   return (
     <div className="flex flex-col w-64 bg-gray-800 text-white">
       <div className="flex items-center justify-center h-20 border-b border-gray-700">
-        <h1 className="text-2xl font-bold">SBT Transport</h1>
+        <h1 className="text-2xl font-bold">SVS Transport</h1>
       </div>
       <nav className="flex-1 px-2 py-4 space-y-2">
         {navItems.map(item => (
@@ -159,8 +161,11 @@ const AddLocationIcon = () => (
 const InvoiceIcon = () => (
     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
 );
+const CreateInvoiceIcon = () => (
+    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+);
 const ManageInvoicesIcon = () => (
-    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 7v10m4-10v10m4-10v10"></path></svg>
+    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
 );
 const MapIcon = () => (
     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13v-6m0 0l6-3m-6 3l6 3m-6-3v-6m6 3l5.447 2.724A1 1 0 0021 16.382V5.618a1 1 0 00-1.447-.894L15 7m-6 3v6m6-3v6"></path></svg>
@@ -171,6 +176,9 @@ const CalculatorIcon = () => (
 const ListIcon = () => (
     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg>
 );
+const SearchIcon = () => (
+    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+)
 const SaveIcon = () => (
     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
 );

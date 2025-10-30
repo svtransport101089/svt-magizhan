@@ -1,10 +1,11 @@
+
 import React from 'react';
 import Card from './ui/Card';
 
 const Dashboard: React.FC = () => {
   return (
     <div>
-      <h2 className="text-3xl font-semibold text-gray-700 mb-6">Welcome to SBT Transport Admin</h2>
+      <h2 className="text-3xl font-semibold text-gray-700 mb-6">Welcome to SVS Transport Admin</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <Card title="Quick Stats">
           <div className="space-y-4">
